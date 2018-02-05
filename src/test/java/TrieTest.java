@@ -16,7 +16,22 @@ public class TrieTest {
         trie.AddWord("hi");
         trie.PrintTrie();
 
-        List<String> res = trie.FindWords("h");
+        FindAndPrint(trie, "h");
+    }
+
+    @Test
+    public void addMultipleTest() {
+        Trie trie = new Trie();
+
+        trie.AddWord("hello");
+        trie.AddWord("hello");
+        trie.PrintTrie();
+
+        FindAndPrint(trie, "h");
+    }
+
+    private void FindAndPrint(Trie trie, String prefix) {
+        List<String> res = trie.FindWords(prefix);
         for (String s : res) {
             out.println(s);
         }
