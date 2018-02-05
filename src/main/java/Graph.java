@@ -57,6 +57,41 @@ public class Graph {
         return result;
     }
 
+    // Note this doesn't find the shortest path! We can update if needed, but for our purposes,
+    // this is currently only used for tree questions.
+    public List<GraphNode> getPath(GraphNode n1, GraphNode n2) {
+        ArrayList<GraphNode> path = new ArrayList<GraphNode>();
+
+        path.add(n1);
+        if (getPath(n1, n2, path)) {
+            return path;
+        }
+        return null;
+    }
+
+    private boolean getPath(GraphNode n1, GraphNode n2, ArrayList<GraphNode> path) {
+        if (getEdgeByIds(n1.id, n2.id) != null) {
+            path.add(n2);
+            return true;
+        } else {
+            // If we don't have an edge from n1 to n2, we put n2 on the path and we traverse all our children.
+            for (GraphEdge edge : getEdgesByNode(n1)) {
+                GraphNode candidateNode = edge.v1 == n1 ? edge.v2 : edge.v1;
+                if (path.contains(candidateNode)) {
+                    continue;
+                }
+                path.add(candidateNode);
+                if (getPath(candidateNode, n2, path)) {
+                    return true;
+                }
+
+                // If we didn't lead to a complete path, remove that child from the path.
+                path.remove(candidateNode);
+            }
+        }
+        return false;
+    }
+
     public void BuildGraph(int nodes, int[][] edges) {
         // First build the nodes
         for (int i = 0; i < nodes; i++) {
@@ -182,5 +217,42 @@ public class Graph {
                 runBuggyRobot(candidateNode, instructionIndex, instructions, true, results);
             }
         }
+    }
+
+    // N Div Tree - in the given tree, find the number of paths (u,v) such that no edges (a,b)
+    // in path (u,v) have the quality that a divides b or b divides a.
+    public int CountNDivTree(int nodes, int[][] edges) {
+        this.BuildGraph(nodes, edges);
+        this.PrintGraph();
+
+        ArrayList<String> results = new ArrayList<String>();
+        for (int i = 0; i < nodes; i++) {
+            for (int j = i + 1; j < nodes; j++) {
+                runNDivTree(getNodeById(i), getNodeById(j), results);
+            }
+        }
+
+        for (String s : results) {
+            out.println(s);
+        }
+        return results.size();
+    }
+
+    private int runNDivTree(GraphNode n1, GraphNode n2, List<String> results) {
+        List<GraphNode> path = getPath(n1, n2);
+        if (path == null) {
+            return 0;
+        }
+
+        GraphNode prev = n1;
+        // Indicies start at 0, so add one to everything.
+        for (int i = 1; i < path.size(); i++) {
+            if ((prev.id + 1) % (path.get(i).id + 1) == 0 || (path.get(i).id + 1) % (prev.id + 1) == 0) {
+                return 0;
+            }
+            prev = path.get(i);
+        }
+        results.add(n1.id + " " + n2.id);
+        return 1;
     }
 }

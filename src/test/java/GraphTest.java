@@ -19,4 +19,11 @@ public class GraphTest {
 
         graph.BuggyRobot(5, new int[][] {{1, 3}, {2, 3}, {3}, {}, {}}, new int[][] {{0, 1}, {2, 3}, {1, 2}});
     }
+
+    @Test
+    public void NDivTreeTest() {
+        Graph graph = new Graph();
+
+        graph.CountNDivTree(6, new int[][] {{1, 3}, {2}, {}, {4, 5}, {}, {}});
+    }
 }
