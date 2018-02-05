@@ -66,6 +66,10 @@ public class Graph {
 
         // Now add the edges
         for (int i = 0; i < nodes; i++){
+            if (edges[i] == null) {
+                continue;
+            }
+
             GraphNode node = getNodeById(i);
             for (int j = 0; j < edges[i].length; j++) {
                 if (getEdgeByIds(i, edges[i][j]) == null) {
@@ -82,6 +86,7 @@ public class Graph {
         }
     }
 
+    // Count the number of gardens - a garden is cycle of 4 in the graph.
     public int CountGardens(int nodes, int[][] edges) {
         this.BuildGraph(nodes, edges);
         this.PrintGraph();
@@ -127,5 +132,55 @@ public class Graph {
         }
 
         return result;
+    }
+
+    // Buggy robot - once during execution, robot can take random path, and can backtrack.
+    // Print how many possible end locations, followed by the list of end locations.
+    public void BuggyRobot(int nodes, int[][] edges, int[][] instructions) {
+        BuildGraph(nodes, edges);
+        PrintGraph();
+
+        int result = 0;
+        List<GraphNode> results = new ArrayList<GraphNode>();
+
+        runBuggyRobot(getNodeById(0), 0, instructions, false, results);
+
+        out.println("number of resuls: " + results.size());
+        for (GraphNode node : results) {
+            out.print(node.id + " ");
+        }
+        out.println();
+    }
+
+    private void runBuggyRobot(GraphNode currentNode, int instructionIndex, int[][] instructions, boolean hasDeviated, List<GraphNode> results) {
+        runBuggyRobotIfNotDeviated(currentNode, instructionIndex, instructions, hasDeviated, results);
+
+        if (instructionIndex < instructions.length) {
+            // Now run an instruction if applicable.
+            if (instructions[instructionIndex][0] == currentNode.id) {
+                // This instruction is applicable, so move it.
+                currentNode = getNodeById(instructions[instructionIndex][1]);
+            }
+            runBuggyRobot(currentNode, instructionIndex + 1, instructions, hasDeviated, results);
+        }
+
+        if (instructionIndex == instructions.length - 1) {
+            // If we just ran the final instruction, deviate if necessary, then count up our end position.
+            runBuggyRobotIfNotDeviated(currentNode, instructionIndex, instructions, hasDeviated, results);
+
+            if (!results.contains(currentNode)) {
+                results.add(currentNode);
+            }
+        }
+    }
+
+    private void runBuggyRobotIfNotDeviated(GraphNode currentNode, int instructionIndex, int[][] instructions, boolean hasDeviated, List<GraphNode> results) {
+        if (!hasDeviated) {
+            // If we haven't deviated yet, deviate before running our current instruction set.
+            for (GraphEdge edge : getEdgesByNode(currentNode)) {
+                GraphNode candidateNode = edge.v1 == currentNode ? edge.v2 : edge.v1;
+                runBuggyRobot(candidateNode, instructionIndex, instructions, true, results);
+            }
+        }
     }
 }
