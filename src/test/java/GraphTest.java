@@ -26,4 +26,22 @@ public class GraphTest {
 
         graph.CountNDivTree(6, new int[][] {{1, 3}, {2}, {}, {4, 5}, {}, {}});
     }
+
+    @Test
+    public void testDijkstra() {
+        Graph graph = new Graph();
+        graph.BuildGraphWithWeights(9, new int[][][] {
+                {{1, 4}, {7, 8}},
+                {{2, 8}, {7, 11}},
+                {{3, 7}, {5, 4}, {8, 2}},
+                {{4, 9}, {5, 14}},
+                {{5, 10}},
+                {{6, 2}},
+                {{7, 1}, {8, 6}},
+                {{8, 7}},
+                {}});
+        graph.PrintGraph();
+
+        out.println("shortest path from 0 to 5: " + graph.getShortestPath(0, 5));
+    }
 }

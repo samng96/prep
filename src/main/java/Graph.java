@@ -21,10 +21,12 @@ public class Graph {
     private class GraphEdge {
         GraphNode v1;
         GraphNode v2;
+        int weight;
 
-        public GraphEdge(GraphNode v1, GraphNode v2) {
+        public GraphEdge(GraphNode v1, GraphNode v2, int weight) {
             this.v1 = v1;
             this.v2 = v2;
+            this.weight = weight;
         }
     }
 
@@ -108,7 +110,27 @@ public class Graph {
             GraphNode node = getNodeById(i);
             for (int j = 0; j < edges[i].length; j++) {
                 if (getEdgeByIds(i, edges[i][j]) == null) {
-                    this.edges.add(new GraphEdge(node, getNodeById(edges[i][j])));
+                    this.edges.add(new GraphEdge(node, getNodeById(edges[i][j]), 0));
+                }
+            }
+        }
+    }
+
+    public void BuildGraphWithWeights(int nodes, int[][][] edges) {
+        for (int i = 0; i < nodes; i++) {
+            this.nodes.add(new GraphNode(i));
+        }
+
+        for (int i = 0; i < nodes; i++) {
+            if (edges[i] == null) { continue; }
+
+            for (int j = 0; j < edges[i].length; j++) {
+                assert edges[i][j].length == 2;
+                GraphNode source = getNodeById(i);
+                GraphNode destination = getNodeById(edges[i][j][0]);
+
+                if (getEdgeByIds(i, edges[i][j][0]) == null) {
+                    this.edges.add(new GraphEdge(source, destination, edges[i][j][1]));
                 }
             }
         }
@@ -117,7 +139,7 @@ public class Graph {
     public void PrintGraph() {
         out.println("nodes: " + nodes.size() + " edges: " + edges.size());
         for (GraphEdge edge : edges) {
-            out.println("e: " + edge.v1.id + " " + edge.v2.id);
+            out.println("e: " + edge.v1.id + " " + edge.v2.id + " w:" + edge.weight);
         }
     }
 
@@ -254,5 +276,49 @@ public class Graph {
         }
         results.add(n1.id + " " + n2.id);
         return 1;
+    }
+
+    public int getShortestPath(int source, int destination) {
+        int[] shortestPath = new int[this.nodes.size()];
+        ArrayList<GraphNode> nodesNotInSpanningSet = new ArrayList<GraphNode>();
+        nodesNotInSpanningSet.addAll(0, nodes);
+
+        // First initialize all entires to max value.
+        for (int i = 0; i < shortestPath.length; i++) {
+            shortestPath[i] = Integer.MAX_VALUE;
+        }
+
+        // Now set source to 0.
+        shortestPath[source] = 0;
+
+        // Run while we're making progress.
+        GraphNode currentNode;
+        while (nodesNotInSpanningSet.size() > 0) {
+
+            // Get the next node to process.
+            int currentMin = Integer.MAX_VALUE;
+            int currentIndex = -1;
+            for (int i = 0; i < shortestPath.length; i++) {
+                if (shortestPath[i] < currentMin && nodesNotInSpanningSet.contains(getNodeById(i))) {
+                    currentMin = shortestPath[i];
+                    currentIndex = i;
+                }
+            }
+            currentNode = getNodeById(currentIndex);
+            nodesNotInSpanningSet.remove(currentNode);
+
+            // Update the edges.
+            List<GraphEdge> currentEdges = getEdgesByNode(currentNode);
+            for (GraphEdge edge : currentEdges) {
+                GraphNode destEdge = edge.v1 == currentNode ? edge.v2 : edge.v1;
+
+                if (shortestPath[destEdge.id] > shortestPath[currentNode.id] + edge.weight) {
+                    shortestPath[destEdge.id] = shortestPath[currentNode.id] + edge.weight;
+                }
+            }
+        }
+
+        assert shortestPath[source] == 0;
+        return shortestPath[destination];
     }
 }
